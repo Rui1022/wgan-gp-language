@@ -24,16 +24,16 @@ if use_cuda:
 
 # Download Google Billion Word at http://www.statmt.org/lm-benchmark/ and
 # fill in the path to the extracted files here!
-DATA_DIR = './data_language'
+DATA_DIR = '/home/estate1022/1-billion-word-language-modeling-benchmark-r13output'
 if len(DATA_DIR) == 0:
     raise Exception('Please specify path to data directory in gan_language.py!')
 
 BATCH_SIZE = 64 # Batch size
-ITERS = 200000 # How many iterations to train for
+ITERS = 2000 # How many iterations to train for
 SEQ_LEN = 32 # Sequence length in characters
-DIM = 512 # Model dimensionality. This is fairly slow and overfits, even on
+DIM = 128 # Model dimensionality. This is fairly slow and overfits, even on
           # Billion Word. Consider decreasing for smaller datasets.
-CRITIC_ITERS = 10 # How many critic iterations per generator iteration. We
+CRITIC_ITERS = 5 # How many critic iterations per generator iteration. We
                   # use 10 for the results in the paper, but 5 should work fine
                   # as well.
 LAMBDA = 10 # Gradient penalty lambda hyperparameter.
@@ -131,7 +131,7 @@ class Discriminator(nn.Module):
 def inf_train_gen():
     while True:
         np.random.shuffle(lines)
-        for i in xrange(0, len(lines)-BATCH_SIZE+1, BATCH_SIZE):
+        for i in  range(0, len(lines)-BATCH_SIZE+1, BATCH_SIZE):
             yield np.array(
                 [[charmap[c] for c in l] for l in lines[i:i+BATCH_SIZE]],
                 dtype='int32'
@@ -172,9 +172,9 @@ def generate_samples(netG):
 
     samples = np.argmax(samples, axis=2)
     decoded_samples = []
-    for i in xrange(len(samples)):
+    for i in  range(len(samples)):
         decoded = []
-        for j in xrange(len(samples[i])):
+        for j in range(len(samples[i])):
             decoded.append(inv_charmap[samples[i][j]])
         decoded_samples.append(tuple(decoded))
     return decoded_samples
@@ -183,8 +183,8 @@ def generate_samples(netG):
 
 netG = Generator()
 netD = Discriminator()
-print netG
-print netD
+print (netG)
+print (netD)
 
 if use_cuda:
     netD = netD.cuda(gpu)
@@ -204,13 +204,13 @@ data = inf_train_gen()
 # During training we monitor JS divergence between the true & generated ngram
 # distributions for n=1,2,3,4. To get an idea of the optimal values, we
 # evaluate these statistics on a held-out set first.
-true_char_ngram_lms = [language_helpers.NgramLanguageModel(i+1, lines[10*BATCH_SIZE:], tokenize=False) for i in xrange(4)]
-validation_char_ngram_lms = [language_helpers.NgramLanguageModel(i+1, lines[:10*BATCH_SIZE], tokenize=False) for i in xrange(4)]
-for i in xrange(4):
-    print "validation set JSD for n={}: {}".format(i+1, true_char_ngram_lms[i].js_with(validation_char_ngram_lms[i]))
-true_char_ngram_lms = [language_helpers.NgramLanguageModel(i+1, lines, tokenize=False) for i in xrange(4)]
+true_char_ngram_lms = [language_helpers.NgramLanguageModel(i+1, lines[10*BATCH_SIZE:], tokenize=False) for i in range(4)]
+validation_char_ngram_lms = [language_helpers.NgramLanguageModel(i+1, lines[:10*BATCH_SIZE], tokenize=False) for i in range(4)]
+for i in range(4):
+    print ("validation set JSD for n={}: {}".format(i+1, true_char_ngram_lms[i].js_with(validation_char_ngram_lms[i])))
+true_char_ngram_lms = [language_helpers.NgramLanguageModel(i+1, lines, tokenize=False) for i in range(4)]
 
-for iteration in xrange(ITERS):
+for iteration in range(ITERS):
     start_time = time.time()
     ############################
     # (1) Update D network
@@ -218,8 +218,8 @@ for iteration in xrange(ITERS):
     for p in netD.parameters():  # reset requires_grad
         p.requires_grad = True  # they are set to False below in netG update
 
-    for iter_d in xrange(CRITIC_ITERS):
-        _data = data.next()
+    for iter_d in range(CRITIC_ITERS):
+        _data = next(data)
         data_one_hot = one_hot.transform(_data.reshape(-1, 1)).toarray().reshape(BATCH_SIZE, -1, len(charmap))
         #print data_one_hot.shape
         real_data = torch.Tensor(data_one_hot)
@@ -280,21 +280,21 @@ for iteration in xrange(ITERS):
     lib.plot.plot('tmp/lang/train gen cost', G_cost.cpu().data.numpy())
     lib.plot.plot('tmp/lang/wasserstein distance', Wasserstein_D.cpu().data.numpy())
 
-    if iteration % 100 == 99:
+    if iteration % 100 ==1:
         samples = []
-        for i in xrange(10):
+        for i in range(10):
             samples.extend(generate_samples(netG))
 
-        for i in xrange(4):
+        for i in range(4):
             lm = language_helpers.NgramLanguageModel(i+1, samples, tokenize=False)
             lib.plot.plot('tmp/lang/js{}'.format(i+1), lm.js_with(true_char_ngram_lms[i]))
 
-        with open('tmp/lang/samples_{}.txt'.format(iteration), 'w') as f:
+        with open('/home/estate1022/tmp/lang/samples_{}.txt'.format(iteration), 'w') as f:
             for s in samples:
                 s = "".join(s)
                 f.write(s + "\n")
 
-    if iteration % 100 == 99:
+    if iteration % 100 == 1:
         lib.plot.flush()
 
     lib.plot.tick()
