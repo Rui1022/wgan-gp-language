@@ -24,13 +24,13 @@ if use_cuda:
 
 # Download Google Billion Word at http://www.statmt.org/lm-benchmark/ and
 # fill in the path to the extracted files here!
-DATA_DIR = '/Users/estate/1-billion-word-language-modeling-benchmark-r13output'
+DATA_DIR = '/home/estate1022/1-billion-word-language-modeling-benchmark-r13output'
 
 if len(DATA_DIR) == 0:
     raise Exception('Please specify path to data directory in gan_language.py!')
 
 BATCH_SIZE = 64 # Batch size
-ITERS = 200000 # How many iterations to train for
+ITERS = 2000000 # How many iterations to train for
 SEQ_LEN = 32 # Sequence length in characters
 DIM = 32 # Model dimensionality. This is fairly slow and overfits, even on
           # Billion Word. Consider decreasing for smaller datasets.
@@ -56,10 +56,11 @@ one_hot = OneHotEncoder()
 one_hot.fit(table)
 
 # ==================Definition Start======================
-result_path='/Users/estate/wgan-gp-master/tmp'
+result_path='/home/estate1022/wgan_gp/result/'
 
-def save_checkpoint(state, filename='checkpoint_ecpch{0}.tar'):
-    filename = result_path + filename.format(state['epoch'])
+
+def save_checkpoint(state, filename='checkpoint_epoch{}.tar'):
+    filename =  filename.format(state['epoch'])
     torch.save(state, filename)
 
 def make_noise(shape, volatile=False):
@@ -281,10 +282,10 @@ for iteration in xrange(ITERS):
     optimizerG.step()
 
     # Write logs and save samples
-    lib.plot.plot('tmp/lang/time', time.time() - start_time)
-    lib.plot.plot('tmp/lang/train disc cost', D_cost.cpu().data.numpy())
-    lib.plot.plot('tmp/lang/train gen cost', G_cost.cpu().data.numpy())
-    lib.plot.plot('tmp/lang/wasserstein distance', Wasserstein_D.cpu().data.numpy())
+    lib.plot.plot('time', time.time() - start_time)
+    lib.plot.plot('train disc cost', D_cost.cpu().data.numpy())
+    lib.plot.plot('train gen cost', G_cost.cpu().data.numpy())
+    lib.plot.plot('wasserstein distance', Wasserstein_D.cpu().data.numpy())
 
     if iteration % 100 == 1:
         samples = []
@@ -295,7 +296,7 @@ for iteration in xrange(ITERS):
             lm = language_helpers.NgramLanguageModel(i+1, samples, tokenize=False)
             lib.plot.plot('tmp/lang/js{}'.format(i+1), lm.js_with(true_char_ngram_lms[i]))
 
-        with open('/Users/estate/wgan-gp-master/tmp/lang/samples_{}.txt'.format(iteration), 'w') as f:
+        with open('/home/estate1022/tmp/lang/samples_{}.txt'.format(iteration), 'w') as f:
             for s in samples:
                 s = "".join(s)
                 f.write(s + "\n")
@@ -305,7 +306,7 @@ for iteration in xrange(ITERS):
                     "net_d_state": netD.state_dict(),
                     "optimizer_g_state": optimizerG.state_dict(),
                     "optimizer_d_state": optimizerD.state_dict()}
-        save_checkpoint(model_dict)
+        save_checkpoint(model_dict,'checkpoint_epoch0.tar')
         
 
 

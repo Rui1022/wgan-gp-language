@@ -85,7 +85,7 @@ class NgramLanguageModel(object):
 
         return 0.5*(kl_p_m + kl_q_m) / np.log(2)
 
-def load_dataset(max_length, max_n_examples, tokenize=False, max_vocab_size=2048, data_dir='/home/ishaan/data/1-billion-word-language-modeling-benchmark-r13output'):
+def load_dataset(max_length, max_n_examples, tokenize=False, max_vocab_size=2048, data_dir='/home/estate1022/1-billion-word-language-modeling-benchmark-r13output'):
     print ("loading dataset...")
 
     lines = []
